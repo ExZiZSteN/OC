@@ -112,13 +112,13 @@ std::string getOS()
 
 unsigned long int getVirtualRAM()
 {
-    std::ifstream f("/roc/meminfo");
+    std::ifstream f("/proc/meminfo");
     unsigned long long value;
     std::string key;
     std::string unit;
     while (f >> key >> value >> unit){
         if (key == "VmallocTotal:"){
-            unsigned long long mb = value / 1024;
+            unsigned long long mb = value / 1024 ;
             return mb;
         }
     }
@@ -150,6 +150,8 @@ int main()
     std::cout << "User: " << username << std::endl;
     std::cout << "RAM: " << sys.freeram / 1024 /1024 << "MB free / " << sys.totalram / 1024  / 1024 << "MB total" << std::endl;
     std::cout << "SWAP: " << sys.totalswap/ 1024/1024 << "MB total / " << sys.freeswap /1024/1024 <<"MB free" << std::endl;
+    std::cout << "Virtual memory: " << getVirtualRAM() <<"MB" << std::endl;
+    std::cout << "Virtual memory2: " << (sys.totalram + sys.totalswap) / 1024/1024 <<"MB" << std::endl;
     std::cout << "Processors: " << get_nprocs() << std::endl;
     std::cout << "Load average: " << getLoads() << std::endl;
     std::cout << "Drivers: '\n'";    
@@ -166,6 +168,5 @@ int main()
                   << totalMB << "MB total\n";
     }
     endmntent(drivers);
-    std::cout << "Virtual memory: " << getVirtualRAM() << std::endl;
 }
 #endif
