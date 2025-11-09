@@ -23,15 +23,14 @@ std::string SysInfo::GetOSVersion() const{
 u_int64_t SysInfo::GetFreeMemory() const{
     struct sysinfo sys;
     sysinfo(&sys);
-    return sys.freeram / 1024 / 1024;
+    return sys.freeram;
 }
 
 u_int64_t SysInfo::GetTotalMemory() const{
     struct sysinfo sys;
     sysinfo(&sys);
-    return sys.totalram / 1024 / 1024;
+    return sys.totalram;
 }
-
 unsigned SysInfo::GetProcessorCount() const{
     return get_nprocs();
 }
