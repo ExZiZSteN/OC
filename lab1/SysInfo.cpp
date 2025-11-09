@@ -37,5 +37,44 @@ unsigned SysInfo::GetProcessorCount() const{
 }
 #elif _WIN32
 
+std::string SysInfo::GetOSName() const{
+    std::stringstream ss;
+    
+
+    if (IsWindows10OrGreater()){
+        ss << "Windows 10 or Greater";
+    }
+    else{
+        ss << "Windows less than 10";
+    }
+    return ss.str();
+};
+
+std::string SysInfo::GetOSVersion() const{
+    std::stringstream ss;
+    OSVERSIONINFOEXW os = { sizeof(os) };
+    GetVersionExW((OSVERSIONINFOW*)&os);
+    ss << os.dwBuildNumber;
+    return ss.str();
+};
+
+uint64_t SysInfo::GetFreeMemory() const{
+    MEMORYSTATUSEX memory = {sizeof(memory)};
+    GlobalMemoryStatusEx(&memory);
+    return (memory.ullTotalPhys - memory.ullAvailPhys);
+}
+
+uint64_t SysInfo::GetTotalMemory() const{
+    MEMORYSTATUSEX memory = {sizeof(memory)};
+    GlobalMemoryStatusEx(&memory);
+    return memory.ullTotalPhys  ;
+}
+
+unsigned SysInfo::GetProcessorCount() const{
+    
+    SYSTEM_INFO system;
+    GetSystemInfo(&system);
+    return system.dwNumberOfProcessors;
+}
 
 #endif

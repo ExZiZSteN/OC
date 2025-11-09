@@ -4,16 +4,21 @@
 #include <windows.h>
 #include <string>
 #include <sstream>
+#include <psapi.h>
+#include <versionhelpers.h>
+
 std::wstring GetSystemInfoText()
 {
     std::wstringstream ss;
     
     OSVERSIONINFOEXW os = { sizeof(os) };
-    GetVersionExW((OSVERSIONINFOW*)&os);
-    ss << L"Windows version: " 
-    << os.dwMajorVersion << L"." 
-    << os.dwMinorVersion << L" (Build " 
-    << os.dwBuildNumber << L")\n";
+
+    if (IsWindows10OrGreater()){
+        ss << "OC: Windows 10 or Greater\n";
+    }
+    else{
+        ss << "OC: Windows less than 10\n";
+    }
 
     WCHAR computerName[256];
     DWORD size = 256;
@@ -22,10 +27,10 @@ std::wstring GetSystemInfoText()
     WCHAR userName[256];
     size = 256;
     GetUserNameW(userName, &size);
-    ss << L"User name: " << userName << L"\n";
+    ss << L"User: " << userName << L"\n";
     SYSTEM_INFO si;
     GetSystemInfo(&si);
-    ss << L"CPU cores: " << si.dwNumberOfProcessors << L"\n";
+
     ss << L"Architecture: ";
     switch (si.wProcessorArchitecture) {
         case PROCESSOR_ARCHITECTURE_AMD64: ss << L"x64\n"; break;
@@ -35,12 +40,48 @@ std::wstring GetSystemInfoText()
     }
     MEMORYSTATUSEX mem = { sizeof(mem) };
     GlobalMemoryStatusEx(&mem);
-    ss << L"RAM total: " << mem.ullTotalPhys / (1024 * 1024) << L" MB\n";
-    WCHAR winPath[MAX_PATH];
-    GetWindowsDirectoryW(winPath, MAX_PATH);
-    ss << L"Windows directory: " << winPath << L"\n";
-    return ss.str();
+    PERFORMANCE_INFORMATION perf {};
+    GetPerformanceInfo(&perf,sizeof(PERFORMACE_INFORMATION));
+    unsigned long pageSize = perf.PageSize;
+    unsigned long commitLimitMB = (perf.CommitLimit * pageSize) / (1024 * 1024);
+    unsigned long commitTotalMB = (perf.CommitTotal * pageSize) / (1024 * 1024);
+    unsigned long totalRAM_MB = mem.ullTotalPhys / (1024 * 1024);
+    unsigned long usedRAM_MB  = (mem.ullTotalPhys - mem.ullAvailPhys) / (1024 * 1024);
+    unsigned long pagefileTotalMB = commitLimitMB - totalRAM_MB;
+    unsigned long pagefileUsedMB  = commitTotalMB - usedRAM_MB;
+    ss << L"RAM: " << usedRAM_MB << L"MB / " << totalRAM_MB << L"MB\n";
+    ss << L"Memory load: " << mem.dwMemoryLoad << L"%\n";
+    ss << L"Virtual Memory: " << commitLimitMB << L"MB\n";
+    ss << L"PageFile: " << pagefileUsedMB << L"MB / " << pagefileTotalMB << L"MB\n";
+    ss << L"\nProcessors: " << si.dwNumberOfProcessors << L"\n";
+    ss << L"Drivers: \n";
+    WCHAR buffer[256];
+    DWORD drives = GetLogicalDriveStringsW(256,buffer);
+    
+    if (drives > 0 && drives < 256){
+        WCHAR* drive = buffer;
+        
+        
+        while (*drive){
+            WCHAR fsName[32] = L"";
+            GetVolumeInformationW(drive, nullptr, 0, nullptr, nullptr, nullptr, fsName, 32);
+            ULARGE_INTEGER freeBytesAvailable, totalBytes, freeBytes;
+            if (GetDiskFreeSpaceExW(drive, &freeBytesAvailable, &totalBytes, &freeBytes)) {
+                unsigned long long totalGB = totalBytes.QuadPart / (1024ULL*1024*1024);
+                unsigned long long freeGB  = freeBytes.QuadPart  / (1024ULL*1024*1024);
+
+                ss << "  - " << std::wstring(drive) << "  ("
+                   << std::wstring(fsName) << "): "
+                   << freeGB << " GB free / "
+                   << totalGB << " GB total\n";
+            }
+            drive += wcslen(drive) + 1;
+
+        }
+        return ss.str();
+    };
 }
+
 int main()
 {
     std::wstring sysInfo = GetSystemInfoText();
