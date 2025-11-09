@@ -63,6 +63,7 @@ std::string getOS()
     while (std::getline(f,line)){
         if (line.rfind("PRETTY_NAME=",0) == 0){
             std::string res = line.substr(13);
+            res.pop_back();
             return res;
         }
     };
