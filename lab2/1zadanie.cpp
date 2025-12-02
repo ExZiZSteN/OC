@@ -1,7 +1,7 @@
 #include <iostream>
 #include <vector>
 #include <thread>
-
+#include <chrono>
 
 using Matrix = std::vector<std::vector<long long>>;
 
@@ -21,7 +21,7 @@ Matrix multiplyMatrixThreaded(const Matrix& A, const Matrix& B) {
         throw std::invalid_argument("Матрицы не должны быть пустыми.");
     }
 
-    std::size_t n = A.size();             
+    std::size_t n = A.size();
 
     Matrix C(n, std::vector<long long>(n, 0));
     std::vector<std::thread> threads;
@@ -45,10 +45,16 @@ int main() {
         {0, 2, 0},
         {0, 0, 2}
     };
+    auto start = std::chrono::high_resolution_clock::now();
     Matrix C = multiplyMatrixThreaded(A, B);
+
+    auto end = std::chrono::high_resolution_clock::now();
+    std::chrono::duration<double, std::milli> elapsed = end - start;
     std::cout << "Result:\n";
     for (const auto& row : C) {
         for (auto v : row) std::cout << v << "\t";
-        std::cout << "\n";
+        std::cout << std::endl;
     }
+
+    std::cout << "\nElapsed time: " << elapsed.count() << " ms\n";
 }
