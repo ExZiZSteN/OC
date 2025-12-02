@@ -63,6 +63,14 @@ int main() {
     file.close();
 
     std::cout << "Time (processes): " << elapsed << " microseconds\n";
+    std::cout << "Result:" << std::endl;
+    for (int i; i < n; i++){
+        for (int j;j < n; j++){
+            std::cout << shared[i*n + j] << "\t";
+        }
+        std::cout << std::endl;
+    }
+
 
     shmdt(shared);
     shmctl(shm_id, IPC_RMID, nullptr);
