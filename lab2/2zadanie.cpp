@@ -4,7 +4,7 @@
 #include <sys/shm.h>
 #include <sys/wait.h>
 #include <unistd.h>
-
+#include <chrono>
 
 using Matrix = std::vector<std::vector<int>>;
 
@@ -31,11 +31,14 @@ int main() {
         {0,2,0},
         {0,0,2}
     };
+
     int n = A.size();
+
     int shm_id = shmget(IPC_PRIVATE, sizeof(int) * n * n, IPC_CREAT | 0666);
     int* shared = (int*) shmat(shm_id, nullptr, 0);
 
     std::vector<pid_t> pids;
+    auto start = std::chrono::high_resolution_clock::now();
 
 
     for (int i = 0; i < n; i++) {
@@ -55,12 +58,17 @@ int main() {
         waitpid(pid, nullptr, 0);
     }
 
+    auto end = std::chrono::high_resolution_clock::now();
+    std::chrono::duration<double, std::milli> elapsed = end - start;
+
     std::cout << "Result:" << std::endl;
     for (int i = 0; i < n; i++) {
         for (int j = 0; j < n; j++)
             std::cout << shared[i * n + j] << "\t";
         std::cout << std::endl;
     }
+
+    std::cout << "\nElapsed time: " << elapsed.count() << " ms\n";
 
 
     shmdt(shared);
