@@ -2,6 +2,7 @@
 #include <vector>
 #include <thread>
 #include <chrono>
+#include <fstream>
 
 using Matrix = std::vector<std::vector<long long>>;
 
@@ -17,20 +18,14 @@ void multiplyRow(const Matrix& A, const Matrix& B, Matrix& C, std::size_t row) {
 }
 
 Matrix multiplyMatrixThreaded(const Matrix& A, const Matrix& B) {
-    if (A.empty() || B.empty()) {
-        throw std::invalid_argument("Матрицы не должны быть пустыми.");
-    }
-
-    std::size_t n = A.size();
-
+    std::size_t n = A.size();             
     Matrix C(n, std::vector<long long>(n, 0));
+
     std::vector<std::thread> threads;
-
-    for (std::size_t i = 0; i < n; ++i) {
+    for (std::size_t i = 0; i < n; ++i)
         threads.emplace_back(multiplyRow, std::cref(A), std::cref(B), std::ref(C), i);
-    }
-    for (auto& t : threads) t.join();
 
+    for (auto& t : threads) t.join();
     return C;
 }
 
@@ -45,16 +40,16 @@ int main() {
         {0, 2, 0},
         {0, 0, 2}
     };
+
     auto start = std::chrono::high_resolution_clock::now();
     Matrix C = multiplyMatrixThreaded(A, B);
-
     auto end = std::chrono::high_resolution_clock::now();
-    std::chrono::duration<double, std::milli> elapsed = end - start;
-    std::cout << "Result:\n";
-    for (const auto& row : C) {
-        for (auto v : row) std::cout << v << "\t";
-        std::cout << std::endl;
-    }
 
-    std::cout << "\nElapsed time: " << elapsed.count() << " ms\n";
+    long long elapsed = std::chrono::duration_cast<std::chrono::microseconds>(end - start).count();
+
+    std::ofstream file("threads.csv", std::ios::app);
+    file << elapsed << "\n";
+    file.close();
+
+    std::cout << "Time (threads): " << elapsed << " microseconds\n";
 }
