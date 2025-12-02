@@ -61,16 +61,16 @@ int main() {
     std::ofstream file("processes.csv", std::ios::app);
     file << elapsed << "\n";
     file.close();
-
-    std::cout << "Time (processes): " << elapsed << " microseconds\n";
+    
     std::cout << "Result:" << std::endl;
-    for (int i; i < n; i++){
-        for (int j;j < n; j++){
-            std::cout << shared[i*n + j] << "\t";
+    
+    for (int i = 0 ; i < n; i++){
+        for (int j = 0;j < n; j++){
+            std::cout << shared[i * n + j] << "\t";
         }
         std::cout << std::endl;
     }
-
+    std::cout << "Time (processes): " << elapsed << " microseconds\n";
 
     shmdt(shared);
     shmctl(shm_id, IPC_RMID, nullptr);
