@@ -47,9 +47,16 @@ int main() {
 
     long long elapsed = std::chrono::duration_cast<std::chrono::microseconds>(end - start).count();
 
+    std::cout << "Result:" << std::endl;
+    for (auto& row : C){
+        for (auto& x : row){
+            std::cout << x << "\t";
+        }
+        std::cout << std::endl;
+    }
     std::ofstream file("threads.csv", std::ios::app);
     file << elapsed << "\n";
     file.close();
 
-    std::cout << "Time (threads): " << elapsed << " microseconds\n";
+    std::cout << "Time: " << elapsed << " microseconds\n";
 }
