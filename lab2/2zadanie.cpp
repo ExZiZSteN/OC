@@ -34,7 +34,6 @@ int main(int argc, char* argv[]) {
         return 1;
     }
 
-    // --- Матрицы ---
     Matrix A(n, std::vector<int>(n));
     Matrix B(n, std::vector<int>(n));
     
@@ -52,6 +51,8 @@ int main(int argc, char* argv[]) {
     std::vector<pid_t> pids;
 
     auto start = std::chrono::high_resolution_clock::now();
+
+    int rows_per_proc = (n + p - 1) / p;
 
     int rows_per_proc = (n + p - 1) / p;
 
