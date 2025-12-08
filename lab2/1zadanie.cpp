@@ -68,11 +68,6 @@ int main(int argc, char* argv[]) {
     auto end = std::chrono::high_resolution_clock::now();
     long long elapsed = std::chrono::duration_cast<std::chrono::milliseconds>(end - start).count();
 
-    std::cout << "Matrix multiplied. First row result:\n";
-    for (auto x : C[0]) std::cout << x << " ";
-    std::cout << "\n";
-
-
     std::ofstream file("threads.csv", std::ios::app);
     file << elapsed << "," << T << "\n";
     file.close();
