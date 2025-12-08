@@ -20,39 +20,34 @@ void multiplyRow(const Matrix& A, const Matrix& B, int* shared, int row) {
     }
 }
 
-int main() {
-    // Matrix A = {
-    //     {1,2},
-    //     {3,4}
-    // };
-    // Matrix A = {
-    //     {1, 2, 3},
-    //     {4, 5, 6},
-    //     {7, 8, 9}
-    // };
-    Matrix A = {
-        {1, 2, 3, 2},
-        {4, 5, 6, 2},
-        {7, 8, 9, 2},
-        {4, 5, 6, 7}
-    };
-    Matrix B = {
-        {2, 0, 0, 0},
-        {0, 2, 0, 0},
-        {0, 0, 2, 0},
-        {0, 0, 0, 2}
-    };
-    // Matrix B = {
-    //     {1,0,0},
-    //     {0,1,0},
-    //     {0,0,1}
-    // };
-        // Matrix B = {
-        //     {1,2},
-        //     {3,4}
-        // };
+int main(int argc, char* argv[]) {
+    if (argc != 3) {
+        std::cerr << "Usage: ./processes <matrix_size> <num_processes>\n";
+        return 1;
+    }
 
-    int n = A.size();
+    int n = std::stoi(argv[1]);
+    int p = std::stoi(argv[2]);
+
+    if (p <= 0) {
+        std::cerr << "num_processes must be > 0\n";
+        return 1;
+    }
+
+    // --- Матрицы ---
+    Matrix A(n, std::vector<int>(n));
+    Matrix B(n, std::vector<int>(n));
+
+    // Заполнение матриц
+    int value = 1;
+    for (int i = 0; i < n; i++) 
+        for (int j = 0; j < n; j++) 
+            A[i][j] = value++;
+
+    for (int i = 0; i < n; i++)
+        B[i][i] = 1;
+
+    // --- Shared memory ---
     int shm_id = shmget(IPC_PRIVATE, sizeof(int) * n * n, IPC_CREAT | 0666);
     int* shared = (int*) shmat(shm_id, nullptr, 0);
 
@@ -60,14 +55,23 @@ int main() {
 
     auto start = std::chrono::high_resolution_clock::now();
 
-    for (int i = 0; i < n; i++) {
+    // --- Распределение строк между процессами ---
+    int rows_per_proc = (n + p - 1) / p;  // потолок деления
+
+    for (int proc = 0; proc < p; proc++) {
         pid_t pid = fork();
 
         if (pid == 0) {
-            multiplyRow(A, B, shared, i);
+            int start_row = proc * rows_per_proc;
+            int end_row = std::min(start_row + rows_per_proc, n);
+
+            for (int r = start_row; r < end_row; r++)
+                multiplyRow(A, B, shared, r);
+
             shmdt(shared);
             exit(0);
-        } else {
+        }
+        else {
             pids.push_back(pid);
         }
     }
@@ -76,21 +80,13 @@ int main() {
         waitpid(pid, nullptr, 0);
 
     auto end = std::chrono::high_resolution_clock::now();
-    long long elapsed = std::chrono::duration_cast<std::chrono::microseconds>(end - start).count();
+    long long elapsed = std::chrono::duration_cast<std::chrono::milliseconds>(end - start).count();
 
     std::ofstream file("processes.csv", std::ios::app);
-    file << elapsed << "," <<  A.size() << "\n";
+    file << elapsed << "," << p << "\n";
     file.close();
-    
-    std::cout << "Result:" << std::endl;
-    
-    for (int i = 0 ; i < n; i++){
-        for (int j = 0;j < n; j++){
-            std::cout << shared[i * n + j] << "\t";
-        }
-        std::cout << std::endl;
-    }
-    std::cout << "Time (processes): " << elapsed << " microseconds\n";
+
+    std::cout << "Time: " << elapsed << " ms\n";
 
     shmdt(shared);
     shmctl(shm_id, IPC_RMID, nullptr);
