@@ -21,16 +21,36 @@ void multiplyRow(const Matrix& A, const Matrix& B, int* shared, int row) {
 }
 
 int main() {
+    // Matrix A = {
+    //     {1,2},
+    //     {3,4}
+    // };
+    // Matrix A = {
+    //     {1, 2, 3},
+    //     {4, 5, 6},
+    //     {7, 8, 9}
+    // };
     Matrix A = {
-        {1,2,3},
-        {4,5,6},
-        {7,8,9}
+        {1, 2, 3, 2},
+        {4, 5, 6, 2},
+        {7, 8, 9, 2},
+        {4, 5, 6, 7}
     };
     Matrix B = {
-        {2,0,0},
-        {0,2,0},
-        {0,0,2}
+        {2, 0, 0, 0},
+        {0, 2, 0, 0},
+        {0, 0, 2, 0},
+        {0, 0, 0, 2}
     };
+    // Matrix B = {
+    //     {1,0,0},
+    //     {0,1,0},
+    //     {0,0,1}
+    // };
+        // Matrix B = {
+        //     {1,2},
+        //     {3,4}
+        // };
 
     int n = A.size();
     int shm_id = shmget(IPC_PRIVATE, sizeof(int) * n * n, IPC_CREAT | 0666);
@@ -59,7 +79,7 @@ int main() {
     long long elapsed = std::chrono::duration_cast<std::chrono::microseconds>(end - start).count();
 
     std::ofstream file("processes.csv", std::ios::app);
-    file << elapsed << "\n";
+    file << elapsed << "," <<  A.size() << "\n";
     file.close();
     
     std::cout << "Result:" << std::endl;

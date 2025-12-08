@@ -30,17 +30,50 @@ Matrix multiplyMatrixThreaded(const Matrix& A, const Matrix& B) {
 }
 
 int main() {
+    // Matrix A = {
+    //     {1,2},
+    //     {3,4}
+    // };
+    // Matrix A = {
+    //     {1, 2, 3},
+    //     {4, 5, 6},
+    //     {7, 8, 9}
+    // };
+    // Matrix A = {
+    //     {1, 2, 3, 2},
+    //     {4, 5, 6, 2},
+    //     {7, 8, 9, 2},
+    //     {4, 5, 6, 7}
+    // };
     Matrix A = {
-        {1, 2, 3},
-        {4, 5, 6},
-        {7, 8, 9}
+        {1,2,3,4,5},
+        {6,7,8,9,10},
+        {11,12,13,14,15},
+        {16,17,18,19,20},
+        {21,22,23,24,25}
     };
+    // Matrix B = {
+    //     {2, 0, 0, 0},
+    //     {0, 2, 0, 0},
+    //     {0, 0, 2, 0},
+    //     {0, 0, 0, 2}
+    // };
+    // Matrix B = {
+    //     {1,0,0},
+    //     {0,1,0},
+    //     {0,0,1}
+    // };
+    // Matrix B = {
+    //     {1,2},
+    //     {3,4}
+    // };
     Matrix B = {
-        {2, 0, 0},
-        {0, 2, 0},
-        {0, 0, 2}
+        {1,0,0,0,0},
+        {0,1,0,0,0},
+        {0,0,1,0,0},
+        {0,0,0,1,0},
+        {0,0,0,0,1}
     };
-
     auto start = std::chrono::high_resolution_clock::now();
     Matrix C = multiplyMatrixThreaded(A, B);
     auto end = std::chrono::high_resolution_clock::now();
@@ -55,7 +88,7 @@ int main() {
         std::cout << std::endl;
     }
     std::ofstream file("threads.csv", std::ios::app);
-    file << elapsed << "\n";
+    file << elapsed << "," << A.size() << "\n";
     file.close();
 
     std::cout << "Time: " << elapsed << " microseconds\n";
