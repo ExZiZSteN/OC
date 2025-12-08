@@ -37,8 +37,7 @@ int main(int argc, char* argv[]) {
     // --- Матрицы ---
     Matrix A(n, std::vector<int>(n));
     Matrix B(n, std::vector<int>(n));
-
-    // Заполнение матриц
+    
     int value = 1;
     for (int i = 0; i < n; i++) 
         for (int j = 0; j < n; j++) 
@@ -47,7 +46,6 @@ int main(int argc, char* argv[]) {
     for (int i = 0; i < n; i++)
         B[i][i] = 1;
 
-    // --- Shared memory ---
     int shm_id = shmget(IPC_PRIVATE, sizeof(int) * n * n, IPC_CREAT | 0666);
     int* shared = (int*) shmat(shm_id, nullptr, 0);
 
@@ -55,8 +53,7 @@ int main(int argc, char* argv[]) {
 
     auto start = std::chrono::high_resolution_clock::now();
 
-    // --- Распределение строк между процессами ---
-    int rows_per_proc = (n + p - 1) / p;  // потолок деления
+    int rows_per_proc = (n + p - 1) / p;
 
     for (int proc = 0; proc < p; proc++) {
         pid_t pid = fork();
