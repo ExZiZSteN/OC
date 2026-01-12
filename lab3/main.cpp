@@ -62,6 +62,7 @@ int main() {
             mmap(nullptr, FILE_SIZE, PROT_READ, MAP_PRIVATE, fd, 0)
         );
 
+        //ydal9et stranici iz cache
         posix_fadvise(fd,0,FILE_SIZE,POSIX_FADV_DONTNEED);
 
         if (map == MAP_FAILED) {
